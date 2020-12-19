@@ -140,12 +140,18 @@ const removeEmployee = () => {
   inquirer
     .prompt({
       type: "input",
-      message: "Please enter the employee ID you want to delete",
+      message: "Please enter the ID of the employee you wish to delete",
       name: "delete",
     })
     .then((answer) => {
-      connection.query(`DELETE FROM employee WHERE id=${answer.delete}`),
-        console.log("The employee was succesfully deleted");
+      connection.query(
+        `DELETE FROM employee WHERE id=${answer.delete}`,
+        (err) => {
+          if (err) throw err;
+            console.log(`Employee ${answer.delete} was succesfully deleted`);
+            runApp()
+        }
+      );
     });
 };
 
@@ -156,10 +162,45 @@ const updateRole = () => {};
 const updateManager = () => {};
 
 // Add department
-const addDept = () => {};
+const addDept = () => {
+    inquirer
+        .prompt(
+            {
+                type: "input",
+                message: "What department would you like to add?",
+                name: "deptName"
+            
+        }
+    )
+        .then((answer) => {
+            connection.query(
+                "INSERT INTO department SET ?",
+                {
+                    name: answer.deptName
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log(`${answer.deptName} department was successfully created`)
+                    runApp();
+                }
+        )
+    })
+};
 
 // Remove department
-const removeDept = () => {};
+const removeDept = () => {
+    inquirer
+        .prompt({
+            type: "input",
+            message: "Please enter the ID of the department you wish to delete",
+            name: "deptDelName"
+        })
+        .then((answer) => {
+            connection.query(
+            `DELETE FROM department WHERE id=${answer.delete}`
+        )
+    })
+};
 
 // Add role
 const addRole = () => {};
