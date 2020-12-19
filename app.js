@@ -128,7 +128,7 @@ const addEmployee = () => {
         },
         (err) => {
           if (err) throw err;
-          console.log("Your employee was successfully added");
+          console.log(`Employee ${answer.addEmpFirst} ${answer.addEmpLast} was successfully created`);
           runApp();
         }
       );
@@ -147,7 +147,9 @@ const removeEmployee = () => {
       connection.query(
         `DELETE FROM employee WHERE id=${answer.delete}`,
         (err) => {
-          if (err) throw err;
+            if (err) {
+              console.log(`Unable to delete employee number ${answer.delete}. Please make sure you entered a valid ID.`)
+          }
             console.log(`Employee ${answer.delete} was succesfully deleted`);
             runApp()
         }
@@ -179,7 +181,9 @@ const addDept = () => {
                     name: answer.deptName
                 },
                 (err) => {
-                    if (err) throw err;
+                    if (err) {
+                        console.log(`Unable to create ${answer.deptName} department`)
+                    }
                     console.log(`${answer.deptName} department was successfully created`)
                     runApp();
                 }
