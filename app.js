@@ -201,13 +201,65 @@ const removeDept = () => {
         })
         .then((answer) => {
             connection.query(
-            `DELETE FROM department WHERE id=${answer.delete}`
-        )
+                `DELETE FROM department WHERE id=${answer.deptDelName}`
+                
+            )
+            console.log(`Department ID #${answer.deptDelName} was succesfully deleted`)
+            runApp();
     })
 };
 
 // Add role
-const addRole = () => {};
+const addRole = () => {
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "What role would you like to add?",
+                name: "roleName"
+            },
+            {
+                type: "input",
+                message: "What is the salary for this role?",
+                name: "roleSalary"
+            },
+            {
+                type: "input",
+                message: "What department ID does this role belong to?",
+                name: "roleDept"
+        }]
+    )
+        .then((answer) => {
+            connection.query(
+                "INSERT INTO role SET ?",
+                {
+                    title: answer.roleName,
+                    salary: answer.roleSalary,
+                    department_id: answer.roleDept
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log(`${answer.roleName} role was succesfully created`)
+                    runApp();
+                }
+        )
+    })
+};
 
 // Remove role
-const removeRole = () => {};
+const removeRole = () => {
+    inquirer
+        .prompt(
+            {
+                type: "input",
+                message: "Please enter the ID of the role you wish to delete",
+                name: "roleDel"
+        }
+    )
+        .then((answer) => {
+            connection.query(`DELETE FROM role WHERE id=${answer.roleDel}`)
+            console.log(`Role ID #${answer.roleDel} was successfully deleted`)
+            runApp();
+        })
+    
+};
