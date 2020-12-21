@@ -1,7 +1,9 @@
+//Dependancies
 const inquirer = require("inquirer");
 const mysql = require("mysql");
 const cTable = require("console.table");
 
+//Sql connection
 const connection = mysql.createConnection({
   host: "localHost",
   port: 3306,
@@ -9,6 +11,7 @@ const connection = mysql.createConnection({
   password: "Ashereli1",
   database: "employee_db",
 });
+
 
 connection.connect((err) => {
   if (err) throw err;
@@ -50,8 +53,6 @@ const runApp = () => {
           return removeEmployee();
         case "Update Employee Role":
           return updateRole();
-        case "Update Employee Manager":
-          return updateManager();
         case "Add Department":
           return addDept();
         case "Remove Department":
@@ -152,11 +153,7 @@ const removeEmployee = () => {
       connection.query(
         `DELETE FROM employee WHERE id=${answer.delete}`,
         (err) => {
-          if (err) {
-            console.log(
-              `Unable to delete employee number ${answer.delete}. Please make sure you entered a valid ID.`
-            );
-          }
+            if (err) throw err;
           console.log(`Employee ${answer.delete} was succesfully deleted`);
           runApp();
         }
@@ -171,12 +168,12 @@ const updateRole = () => {
   const sql =
     "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary FROM employee INNER JOIN role ON employee.role_id = role.id";
 
-  const sql2 = "SELECT role.title FROM role";
+  const sql2 = "SELECT role.title, role.id FROM role";
   connection.query(sql, function (err, res) {
     if (err) throw err;
     empArray = res;
     let empNames = empArray.map(
-      (user) => user.first_name + " " + user.last_name + ", " + user.title
+      (user) => user.id + " " + user.first_name + " " + user.last_name + ", " + user.title
     );
     inquirer
       .prompt([
@@ -189,10 +186,11 @@ const updateRole = () => {
       ])
       .then((answer) => {
           connection.query(sql2, function (err, res) {
-            let result = answer.empRole
+              let result = JSON.stringify(answer.empRole)
+              let resultId = result.replace(/\D/g,'')
           if (err) throw err;
           roleArray = res;
-          let roleList = roleArray.map((roles) => roles.title);
+          let roleList = roleArray.map((roles) => roles.id + " " + roles.title);
           inquirer.prompt([
             {
               type: "list",
@@ -202,9 +200,13 @@ const updateRole = () => {
             },
           ])
               .then((answer) => {
-                //   console.log(answer.newEmpRole)
-                //   console.log(result)
-              connection.query(`UPDATE employee SET role_id = ${answer.roleList} WHERE id = ${result}`)
+                let role = JSON.stringify(answer.newEmpRole)
+                let newRole = role.replace(/\D/g,'')
+                  console.log(newRole)
+                  console.log(resultId)
+                  connection.query(`UPDATE employee SET role_id = ${newRole} WHERE id = ${resultId}`)
+                  console.log("Employee role successfully updated")
+                  runApp();
           })
         })
         
