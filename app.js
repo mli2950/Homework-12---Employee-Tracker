@@ -68,11 +68,14 @@ const runApp = () => {
 
 // View all employees
 const allEmployees = () => {
-  connection.query("SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id", (err, res) => {
-    if (err) throw err;
-    console.table(res);
-    runApp();
-  });
+  connection.query(
+    "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id",
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      runApp();
+    }
+  );
 };
 // View all roles
 const allRoles = () => {
@@ -128,7 +131,9 @@ const addEmployee = () => {
         },
         (err) => {
           if (err) throw err;
-          console.log(`Employee ${answer.addEmpFirst} ${answer.addEmpLast} was successfully created`);
+          console.log(
+            `Employee ${answer.addEmpFirst} ${answer.addEmpLast} was successfully created`
+          );
           runApp();
         }
       );
@@ -147,11 +152,13 @@ const removeEmployee = () => {
       connection.query(
         `DELETE FROM employee WHERE id=${answer.delete}`,
         (err) => {
-            if (err) {
-              console.log(`Unable to delete employee number ${answer.delete}. Please make sure you entered a valid ID.`)
+          if (err) {
+            console.log(
+              `Unable to delete employee number ${answer.delete}. Please make sure you entered a valid ID.`
+            );
           }
-            console.log(`Employee ${answer.delete} was succesfully deleted`);
-            runApp()
+          console.log(`Employee ${answer.delete} was succesfully deleted`);
+          runApp();
         }
       );
     });
@@ -159,26 +166,56 @@ const removeEmployee = () => {
 
 // Update employee role
 const updateRole = () => {
+  let empArray = [];
+  let roleArray = [];
+  const sql =
+    "SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary FROM employee INNER JOIN role ON employee.role_id = role.id";
+
+  const sql2 = "SELECT role.title FROM role";
+  connection.query(sql, function (err, res) {
+    if (err) throw err;
+    empArray = res;
+    let empNames = empArray.map(
+      (user) => user.first_name + " " + user.last_name + ", " + user.title
+    );
     inquirer
-        .prompt([
+      .prompt([
+        {
+          type: "list",
+          message: "Which employee would you like to update?",
+          choices: empNames,
+          name: "empRole",
+        },
+      ])
+      .then((answer) => {
+          connection.query(sql2, function (err, res) {
+            let result = answer.empRole
+          if (err) throw err;
+          roleArray = res;
+          let roleList = roleArray.map((roles) => roles.title);
+          inquirer.prompt([
             {
-                type: "input",
-                message: "Please enter the employee ID of the employee you would like to change the role of",
-                name: "empUpd"
+              type: "list",
+              message: "What would you like to change their role to?",
+              name: "newEmpRole",
+              choices: roleList,
             },
-            {
-                type: "input",
-                message: "Please enter the role ID you would it updated to",
-                name: "roleUpdateID"
-            }
-    ])
-        .then((answer) => {
-            connection.query(
-                `UPDATE employee SET role_id = ${answer.roleUpdateID} WHERE id = ${answer.empUpd}`
-            )
-            runApp();
+          ])
+              .then((answer) => {
+                //   console.log(answer.newEmpRole)
+                //   console.log(result)
+              connection.query(`UPDATE employee SET role_id = ${answer.roleList} WHERE id = ${result}`)
+          })
+        })
         
-    })
+      });
+  });
+
+  // .then((answer) => {
+  //     connection.query(
+  //         `UPDATE employee SET role_id = ${answer.roleUpdateID} WHERE id = ${answer.empUpd}`
+  //     )
+  //     runApp();
 };
 
 // Update employee manager
@@ -186,101 +223,94 @@ const updateManager = () => {};
 
 // Add department
 const addDept = () => {
-    inquirer
-        .prompt(
-            {
-                type: "input",
-                message: "What department would you like to add?",
-                name: "deptName"
-            
-        }
-    )
-        .then((answer) => {
-            connection.query(
-                "INSERT INTO department SET ?",
-                {
-                    name: answer.deptName
-                },
-                (err) => {
-                    if (err) {
-                        console.log(`Unable to create ${answer.deptName} department`)
-                    }
-                    console.log(`${answer.deptName} department was successfully created`)
-                    runApp();
-                }
-        )
+  inquirer
+    .prompt({
+      type: "input",
+      message: "What department would you like to add?",
+      name: "deptName",
     })
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          name: answer.deptName,
+        },
+        (err) => {
+          if (err) {
+            console.log(`Unable to create ${answer.deptName} department`);
+          }
+          console.log(`${answer.deptName} department was successfully created`);
+          runApp();
+        }
+      );
+    });
 };
 
 // Remove department
 const removeDept = () => {
-    inquirer
-        .prompt({
-            type: "input",
-            message: "Please enter the ID of the department you wish to delete",
-            name: "deptDelName"
-        })
-        .then((answer) => {
-            connection.query(
-                `DELETE FROM department WHERE id=${answer.deptDelName}`
-                
-            )
-            console.log(`Department ID #${answer.deptDelName} was succesfully deleted`)
-            runApp();
+  inquirer
+    .prompt({
+      type: "input",
+      message: "Please enter the ID of the department you wish to delete",
+      name: "deptDelName",
     })
+    .then((answer) => {
+      connection.query(`DELETE FROM department WHERE id=${answer.deptDelName}`);
+      console.log(
+        `Department ID #${answer.deptDelName} was succesfully deleted`
+      );
+      runApp();
+    });
 };
 
 // Add role
 const addRole = () => {
-    inquirer
-        .prompt([
-            {
-                type: "input",
-                message: "What role would you like to add?",
-                name: "roleName"
-            },
-            {
-                type: "input",
-                message: "What is the salary for this role?",
-                name: "roleSalary"
-            },
-            {
-                type: "input",
-                message: "What department ID does this role belong to?",
-                name: "roleDept"
-        }]
-    )
-        .then((answer) => {
-            connection.query(
-                "INSERT INTO role SET ?",
-                {
-                    title: answer.roleName,
-                    salary: answer.roleSalary,
-                    department_id: answer.roleDept
-                },
-                (err) => {
-                    if (err) throw err;
-                    console.log(`${answer.roleName} role was succesfully created`)
-                    runApp();
-                }
-        )
-    })
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "What role would you like to add?",
+        name: "roleName",
+      },
+      {
+        type: "input",
+        message: "What is the salary for this role?",
+        name: "roleSalary",
+      },
+      {
+        type: "input",
+        message: "What department ID does this role belong to?",
+        name: "roleDept",
+      },
+    ])
+    .then((answer) => {
+      connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title: answer.roleName,
+          salary: answer.roleSalary,
+          department_id: answer.roleDept,
+        },
+        (err) => {
+          if (err) throw err;
+          console.log(`${answer.roleName} role was succesfully created`);
+          runApp();
+        }
+      );
+    });
 };
 
 // Remove role
 const removeRole = () => {
-    inquirer
-        .prompt(
-            {
-                type: "input",
-                message: "Please enter the ID of the role you wish to delete",
-                name: "roleDel"
-        }
-    )
-        .then((answer) => {
-            connection.query(`DELETE FROM role WHERE id=${answer.roleDel}`)
-            console.log(`Role ID #${answer.roleDel} was successfully deleted`)
-            runApp();
-        })
-    
+  inquirer
+    .prompt({
+      type: "input",
+      message: "Please enter the ID of the role you wish to delete",
+      name: "roleDel",
+    })
+    .then((answer) => {
+      connection.query(`DELETE FROM role WHERE id=${answer.roleDel}`);
+      console.log(`Role ID #${answer.roleDel} was successfully deleted`);
+      runApp();
+    });
 };
