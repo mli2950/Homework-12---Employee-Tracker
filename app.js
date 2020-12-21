@@ -68,7 +68,7 @@ const runApp = () => {
 
 // View all employees
 const allEmployees = () => {
-  connection.query("SELECT * FROM employee", (err, res) => {
+  connection.query("SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id", (err, res) => {
     if (err) throw err;
     console.table(res);
     runApp();
@@ -158,7 +158,16 @@ const removeEmployee = () => {
 };
 
 // Update employee role
-const updateRole = () => {};
+const updateRole = () => {
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "What employee would you like to update?",
+                name: "empUpd"
+        }
+    ])
+};
 
 // Update employee manager
 const updateManager = () => {};
