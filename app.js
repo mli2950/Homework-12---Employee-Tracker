@@ -163,10 +163,22 @@ const updateRole = () => {
         .prompt([
             {
                 type: "input",
-                message: "What employee would you like to update?",
+                message: "Please enter the employee ID of the employee you would like to change the role of",
                 name: "empUpd"
-        }
+            },
+            {
+                type: "input",
+                message: "Please enter the role ID you would it updated to",
+                name: "roleUpdateID"
+            }
     ])
+        .then((answer) => {
+            connection.query(
+                `UPDATE employee SET role_id = ${answer.roleUpdateID} WHERE id = ${answer.empUpd}`
+            )
+            runApp();
+        
+    })
 };
 
 // Update employee manager
