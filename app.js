@@ -70,7 +70,7 @@ const runApp = () => {
 // View all employees
 const allEmployees = () => {
   connection.query(
-    "SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id",
+    "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name as department, role.salary FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id",
     (err, res) => {
       if (err) throw err;
       console.table(res);
@@ -186,6 +186,7 @@ const updateRole = () => {
       ])
       .then((answer) => {
           connection.query(sql2, function (err, res) {
+              
               let result = JSON.stringify(answer.empRole)
               let resultId = result.replace(/\D/g,'')
           if (err) throw err;
